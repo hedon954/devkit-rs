@@ -1,0 +1,12 @@
+[package]
+name = "devkit-rl"
+version = "0.1.0"
+edition = "2021"
+authors = ["hedonwang"]
+
+[[bench]]
+name = "token_bucket_bench"
+harness = false
+
+[dependencies]
+criterion = { workspace = true }
