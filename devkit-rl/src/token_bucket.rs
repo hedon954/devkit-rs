@@ -20,10 +20,12 @@ use std::{
 /// assert!(bucket.allow()); // Allows 1 token
 /// assert!(bucket.allow_n(5)); // Allows 5 tokens
 /// ```
+#[derive(Debug, Clone)]
 pub struct TokenBucket {
     inner: Arc<Mutex<TokenBucketInner>>,
 }
 
+#[derive(Debug)]
 struct TokenBucketInner {
     tokens: u64,
     capacity: u64,
