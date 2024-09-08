@@ -3,6 +3,23 @@ use std::{
     time::{Duration, Instant},
 };
 
+/// A thread-safe token bucket rate limiter.
+///
+/// This struct implements a token bucket, which is a mechanism to control the rate
+/// at which actions can be performed. Tokens are added to the bucket at a fixed
+/// rate, and actions can only proceed if there are enough tokens in the bucket.
+///
+/// The `TokenBucket` struct is thread-safe and can be shared across multiple threads.
+///
+/// # Example
+/// ```
+/// use std::time::Duration;
+/// use devkit_rl::TokenBucket;
+///
+/// let bucket = TokenBucket::new(100, 10, Some(Duration::from_secs(1)));
+/// assert!(bucket.allow()); // Allows 1 token
+/// assert!(bucket.allow_n(5)); // Allows 5 tokens
+/// ```
 pub struct TokenBucket {
     inner: Arc<Mutex<TokenBucketInner>>,
 }
@@ -16,6 +33,25 @@ struct TokenBucketInner {
 }
 
 impl TokenBucket {
+    /// Creates a new `TokenBucket` with the specified capacity, refill rate, and optional refill interval.
+    ///
+    /// - `capacity`: The maximum number of tokens the bucket can hold.
+    /// - `refill_rate`: The number of tokens to add during each refill interval.
+    /// - `refill_interval`: The time duration between each refill. If `None` is provided, the default is 1 second.
+    ///
+    /// # Arguments
+    ///
+    /// * `capacity` - Maximum number of tokens in the bucket.
+    /// * `refill_rate` - Number of tokens to refill per interval.
+    /// * `refill_interval` - Interval between refills (optional).
+    ///
+    /// # Example
+    /// ```
+    /// use std::time::Duration;
+    /// use devkit_rl::TokenBucket;
+    ///
+    /// let bucket = TokenBucket::new(100, 10, Some(Duration::from_secs(1)));
+    /// ```
     pub fn new(capacity: u64, refill_rate: u64, refill_interval: Option<Duration>) -> Self {
         let inner = TokenBucketInner {
             tokens: capacity, // initially fill the bucket to capacity
@@ -30,10 +66,36 @@ impl TokenBucket {
         }
     }
 
+    /// Attempts to consume 1 token from the bucket.
+    ///
+    /// Returns `true` if the token was successfully consumed, or `false` if there are not enough tokens available.
+    ///
+    /// # Example
+    /// ```
+    /// use devkit_rl::TokenBucket;
+    ///
+    /// let bucket = TokenBucket::new(100, 10, Some(std::time::Duration::from_secs(1)));
+    /// assert!(bucket.allow());
+    /// ```
     pub fn allow(&self) -> bool {
         self.allow_n(1)
     }
 
+    /// Attempts to consume `n` tokens from the bucket.
+    ///
+    /// Returns `true` if `n` tokens were successfully consumed, or `false` if there are not enough tokens available.
+    ///
+    /// # Arguments
+    ///
+    /// * `n` - The number of tokens to consume.
+    ///
+    /// # Example
+    /// ```
+    /// use devkit_rl::TokenBucket;
+    ///
+    /// let bucket = TokenBucket::new(100, 10, Some(std::time::Duration::from_secs(1)));
+    /// assert!(bucket.allow_n(5));
+    /// ```
     pub fn allow_n(&self, n: u64) -> bool {
         let mut inner = self.inner.lock().expect("Failed to lock token bucket");
 
@@ -49,6 +111,11 @@ impl TokenBucket {
 }
 
 impl TokenBucketInner {
+    /// Advances the token bucket, adding tokens based on the elapsed time since the last refill.
+    ///
+    /// This method checks how much time has passed since the last token refill and adds tokens
+    /// to the bucket accordingly, ensuring that the number of tokens in the bucket does not
+    /// exceed its capacity.
     fn advance(&mut self) {
         let now = Instant::now();
         let elapsed = now - self.last_refill_time;
@@ -78,6 +145,11 @@ impl TokenBucketInner {
 mod tests {
     use super::*;
 
+    /// Tests the behavior of the token bucket.
+    ///
+    /// - Verifies that tokens can be consumed up to the bucket's capacity.
+    /// - Ensures that consuming more tokens than available results in failure.
+    /// - Tests the refilling behavior over time.
     #[test]
     fn token_bucket_should_work() {
         const RATE: u64 = 10;
