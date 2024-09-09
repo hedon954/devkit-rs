@@ -12,6 +12,10 @@ harness = false
 name = "leaky_bucket_bench"
 harness = false
 
+[[bench]]
+name = "fixed_window_bench"
+harness = false
+
 [dependencies]
 chrono = "0.4.38"
 criterion = { workspace = true }
