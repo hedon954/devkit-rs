@@ -16,6 +16,14 @@ harness = false
 name = "fixed_window_bench"
 harness = false
 
+[[bench]]
+name = "sliding_window_log_bench"
+harness = false
+
+[[bench]]
+name = "sliding_window_count_bench"
+harness = false
+
 [dependencies]
 chrono = "0.4.38"
 criterion = { workspace = true }
