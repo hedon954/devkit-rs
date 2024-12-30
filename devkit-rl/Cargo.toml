@@ -2,6 +2,7 @@
 name = "devkit-rl"
 version = "0.0.1"
 edition = "2021"
+description = "DevKit Rate Limiting"
 authors = ["hedonwang"]
 
 [[bench]]
