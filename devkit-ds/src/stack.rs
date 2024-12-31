@@ -111,8 +111,27 @@ impl<'a, T> Iterator for IterMut<'a, T> {
     }
 }
 
+/// Check if the parenthesis in the string is matching.
+pub fn is_parenthesis_matching(s: &str) -> bool {
+    let mut stack = Stack::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '(' | '{' | '[' => stack.push(c),
+            ')' | '}' | ']' => {
+                let opening = stack.pop().unwrap_or(' ');
+                let is_match = matches!((opening, c), ('(', ')') | ('{', '}') | ('[', ']'));
+                if !is_match {
+                    return false;
+                }
+            }
+            _ => {}
+        }
+    }
+    stack.is_empty()
+}
+
 #[cfg(test)]
-mod tests {
+mod test_stack {
     use super::*;
 
     #[test]
@@ -230,5 +249,38 @@ mod tests {
 
         let collected: Vec<i32> = stack.into_iter().collect();
         assert_eq!(collected, vec![3, 2, 1]);
+    }
+}
+
+#[cfg(test)]
+mod test_parenthesis_matching {
+    use super::*;
+
+    #[test]
+    fn just_matched_parenthesis_should_be_true() {
+        let input = "((()))";
+        let result = is_parenthesis_matching(input);
+        assert!(result);
+    }
+
+    #[test]
+    fn unmatch_parenthesis_should_be_false() {
+        let input = "((())";
+        let result = is_parenthesis_matching(input);
+        assert!(!result);
+    }
+
+    #[test]
+    fn match_parenthesis_with_other_characters_should_be_true() {
+        let input = "[1]+{2}*(3+4)";
+        let result = is_parenthesis_matching(input);
+        assert!(result);
+    }
+
+    #[test]
+    fn unmatch_parenthesis_with_other_characters_should_be_false() {
+        let input = "[1]+{2}*(3+4";
+        let result = is_parenthesis_matching(input);
+        assert!(!result);
     }
 }
