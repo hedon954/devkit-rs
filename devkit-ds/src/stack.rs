@@ -130,6 +130,24 @@ pub fn is_parenthesis_matching(s: &str) -> bool {
     stack.is_empty()
 }
 
+/// Convert a decimal number to a given base, base is between 2 and 16.
+pub fn base_converter(mut dec_num: u32, base: u32) -> String {
+    assert!((2..=16).contains(&base), "Base must be between 2 and 16");
+    let mut stack = Stack::new();
+    while dec_num > 0 {
+        stack.push(dec_num % base);
+        dec_num /= base;
+    }
+
+    const DIGITS: &[char] = &[
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+    ];
+    stack
+        .into_iter()
+        .map(|d| DIGITS[d as usize])
+        .collect::<String>()
+}
+
 #[cfg(test)]
 mod test_stack {
     use super::*;
@@ -282,5 +300,28 @@ mod test_parenthesis_matching {
         let input = "[1]+{2}*(3+4";
         let result = is_parenthesis_matching(input);
         assert!(!result);
+    }
+}
+
+#[cfg(test)]
+mod test_base_converter {
+    use super::*;
+
+    #[test]
+    fn test_base_converter() {
+        let result = base_converter(10, 2);
+        assert_eq!(result, "1010");
+
+        let result = base_converter(10, 16);
+        assert_eq!(result, "A");
+
+        let result = base_converter(10, 8);
+        assert_eq!(result, "12");
+
+        let result = base_converter(10, 10);
+        assert_eq!(result, "10");
+
+        let result = base_converter(10010, 16);
+        assert_eq!(result, "271A");
     }
 }
