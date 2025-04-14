@@ -1,0 +1,9 @@
+[package]
+name = "devkit-data"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+serde = { version = "1.0.217", features = ["derive"] }
+toml = "0.8.20"
